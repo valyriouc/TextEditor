@@ -1,9 +1,4 @@
 ﻿using Codebase.Communication;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CodebaseTests;
 
@@ -18,11 +13,21 @@ public class ProtocolWritingTests
     [InlineData(5)]
     [InlineData(6)]
     [InlineData(7)]
-
-    public void ThrowWhenBufferToSmall(int count)
+    [InlineData(8)]
+    public void ThrowWhenBufferToSmallForMessageWithoutContent(int count)
     {
-        CommPyMessage msg = new CommPyMessage();
-        Span<byte> buffer = new byte[count];
+        void Wrapper()
+        {
+            CommPyMessage msg = new CommPyMessage(
+            CommPySender.Controller,
+            CommPyReceiver.Broadcast,
+            CommPyPriority.Inform);
+
+            Span<byte> buffer = new byte[count];
+            msg.Write(buffer);
+        }
+
+        Assert.Throws<Exception>(() => Wrapper());
     }
 
     [Fact]

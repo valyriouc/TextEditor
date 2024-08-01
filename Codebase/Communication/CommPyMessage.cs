@@ -39,6 +39,15 @@ public struct CommPyMessage
 
     public Memory<byte> Content { get; }
 
+    public CommPyMessage(
+        CommPySender sender, 
+        CommPyReceiver receiver,
+        CommPyPriority priority) 
+        : this(sender, receiver, priority, Array.Empty<byte>())
+    {
+
+    }
+
     private CommPyMessage(
         CommPySender sender,
         CommPyReceiver receiver,
@@ -58,6 +67,9 @@ public struct CommPyMessage
         out CommPyMessage msg, 
         out ReadOnlySpan<byte> offset)
     {
+        // TODO: Needs to be implemented
+        msg = default;
+        offset = buffer;
         return true;
     }
 
