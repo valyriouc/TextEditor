@@ -78,7 +78,6 @@ public struct CommPyMessage
         out CommPyMessage msg, 
         out ReadOnlySpan<byte> offset)
     {
-        // TODO: Needs to be implemented
         msg = default;
         offset = buffer;
 
@@ -88,6 +87,35 @@ public struct CommPyMessage
         }
 
         buffer = buffer[1..];
+        if (!buffer[0].TryAsSender(out CommPySender sender))
+        {
+            return ParsingState.InvalidSender;
+        }
+
+        buffer = buffer[1..];
+        if (!buffer[0].TryAsReceiver(out CommPyReceiver receiver))
+        {
+            return ParsingState.InvalidReceiver;
+        }
+
+        buffer = buffer[1..];
+        if (!buffer[0].TryAsPriority(out CommPyPriority priority))
+        {
+            return ParsingState.InvalidPriority;
+        }
+
+        buffer = buffer[1..];
+        byte command = buffer[0];
+        buffer = buffer[1..];
+        
+        // Reading length 
+        int length = BitConverter.ToInt32(buffer[..4]);
+        buffer = buffer[4..];
+
+        Memory<byte> content = buffer[..length].ToArray();
+        
+        msg = new CommPyMessage(sender, receiver, priority, command, content);
+        offset = buffer[length..];
         
         return ParsingState.Success;
     }
