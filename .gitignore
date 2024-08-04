@@ -3,3 +3,6 @@
 
 **/bin
 **/obj
+
+**/.idea
+**/TextEditor.sln.DotSettings.user
