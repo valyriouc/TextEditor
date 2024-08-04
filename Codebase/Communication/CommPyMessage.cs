@@ -7,6 +7,7 @@ public enum ParsingState
     InvalidSender,
     InvalidReceiver,
     InvalidPriority,
+    Success
 }
 
 public interface IMessageContent<T>
@@ -72,7 +73,7 @@ public struct CommPyMessage
         Content = content;
     }
     
-    public static bool TryReadFrom(
+    public static ParsingState TryReadFrom(
         ReadOnlySpan<byte> buffer, 
         out CommPyMessage msg, 
         out ReadOnlySpan<byte> offset)
@@ -80,7 +81,15 @@ public struct CommPyMessage
         // TODO: Needs to be implemented
         msg = default;
         offset = buffer;
-        return true;
+
+        if (buffer.IsEmpty || buffer[0] != CommPyMessage.StartByte) 
+        {
+            return ParsingState.NoMessageStart;
+        }
+
+        buffer = buffer[1..];
+        
+        return ParsingState.Success;
     }
 
     public int Write(Span<byte> buffer)
@@ -110,3 +119,45 @@ public struct CommPyMessage
         return wrote;
     }
  }
+
+file static class ByteExtensions
+{
+    public static bool TryAsSender(this byte self, out CommPySender sender)
+    {
+        sender = default;
+        switch (self)
+        {
+            case byte n when n >= 0x00 && n <= 0x02:
+                sender = (CommPySender)self;
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public static bool TryAsReceiver(this byte self, out CommPyReceiver receiver)
+    {
+        receiver = default;
+        switch (self)
+        {
+            case byte n when n >= 0x00 && n <= 0x03:
+                receiver = (CommPyReceiver)self;
+                return true;
+            default:
+                return false;
+        }
+    }
+    
+    public static bool TryAsPriority(this byte self, out CommPyPriority priority)
+    {
+        priority = default;
+        switch (self)
+        {
+            case byte n when n >= 0x00 && n <= 0x03:
+                priority = (CommPyPriority)self;
+                return true;
+            default:
+                return false;
+        }
+    }
+}
