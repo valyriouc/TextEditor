@@ -33,6 +33,7 @@ struct LoggingEntry
     public DateTime TimeStamp { get; }
 
     // TODO: We need the name of the process where the log request came from!
+
     public LogLevel Level { get; }
     
     public string Content { get; }
@@ -121,7 +122,15 @@ internal class CommManager : IDisposable
 
     public void Read()
     {
-
+        int count = 0;
+        Span<byte> buffer = new byte[1024];
+        while (!MainToken.IsCancellationRequested && (count = Stdin.Read(buffer)) > 0)
+        {
+            if (CommPyMessage.TryReadFrom(buffer, out CommPyMessage msg, out ReadOnlySpan<byte> remaining))
+            {
+                
+            }
+        }
     }
 
     public void SignalReady()

@@ -21,7 +21,8 @@ public class ProtocolWritingTests
             CommPyMessage msg = new CommPyMessage(
             CommPySender.Controller,
             CommPyReceiver.Broadcast,
-            CommPyPriority.Inform);
+            CommPyPriority.Inform,
+            0x20);
 
             Span<byte> buffer = new byte[count];
             msg.Write(buffer);
@@ -33,6 +34,30 @@ public class ProtocolWritingTests
     [Fact]
     public void SuccessfulWriteMessageToBuffer()
     {
+        CommPyMessage msg = new CommPyMessage(
+            CommPySender.Controller,
+            CommPyReceiver.Broadcast,
+            CommPyPriority.Inform,
+            0x20);
 
+        Span<byte> buffer = new byte[1024];
+        int count = msg.Write(buffer);
+        
+        Assert.Equal(9, count);
+
+        byte[] expected =
+        [
+            0x1f,
+            0x02,
+            0x03,
+            0x03,
+            0x20,
+            0x00,
+            0x00,
+            0x00,
+            0x00
+        ];
+        
+        Assert.Equal(expected, buffer[..count].ToArray());
     }
 }

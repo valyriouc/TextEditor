@@ -1,5 +1,14 @@
 ﻿namespace Codebase.Communication;
 
+public enum ParsingState
+{
+    NoMessageStart,
+    MissingData,
+    InvalidSender,
+    InvalidReceiver,
+    InvalidPriority,
+}
+
 public interface IMessageContent<T>
 {
     public Memory<byte> AsByteSequence();
@@ -35,33 +44,34 @@ public struct CommPyMessage
 
     public CommPyPriority Priority { get; }
 
-    public byte ProcessCommand { get; }
+    public byte Command { get; }
 
     public Memory<byte> Content { get; }
 
     public CommPyMessage(
         CommPySender sender, 
         CommPyReceiver receiver,
-        CommPyPriority priority) 
-        : this(sender, receiver, priority, Array.Empty<byte>())
+        CommPyPriority priority,
+        byte command) 
+        : this(sender, receiver, priority, command, Array.Empty<byte>())
     {
-
+        
     }
 
     private CommPyMessage(
         CommPySender sender,
         CommPyReceiver receiver,
         CommPyPriority priority,
+        byte command,
         Memory<byte> content)
     {
         Sender = sender;
         Receiver = receiver;
         Priority = priority;
+        Command = command;
         Content = content;
     }
-
-
-
+    
     public static bool TryReadFrom(
         ReadOnlySpan<byte> buffer, 
         out CommPyMessage msg, 
@@ -86,7 +96,7 @@ public struct CommPyMessage
         buffer[1] = (byte)Sender;
         buffer[2] = (byte)Receiver;
         buffer[3] = (byte)Priority;
-        buffer[4] = (byte)ProcessCommand;
+        buffer[4] = Command;
 
         int wrote = 5;
 
